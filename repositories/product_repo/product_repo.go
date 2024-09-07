@@ -1,5 +1,3 @@
-// repositories/product_repo/product_repo.go
-
 package product_repo
 
 import (

@@ -1,5 +1,3 @@
-// services/category_service.go
-
 package services
 
 import (

@@ -1,5 +1,3 @@
-// repositories/order_repo/order_repo.go
-
 package order_repo
 
 import (

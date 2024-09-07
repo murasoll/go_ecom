@@ -1,5 +1,3 @@
-// api/v1/city.go
-
 package v1
 
 import (

@@ -1,5 +1,3 @@
-// api/v1/orders.go
-
 package v1
 
 import (

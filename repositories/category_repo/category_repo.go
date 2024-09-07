@@ -1,5 +1,3 @@
-// repositories/category_repo/category_repo.go
-
 package category_repo
 
 import (

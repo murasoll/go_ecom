@@ -1,5 +1,3 @@
-// repositories/city_repo/city_repo.go
-
 package city_repo
 
 import (

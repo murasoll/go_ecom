@@ -1,5 +1,3 @@
-// api/v1/auth.go
-
 package v1
 
 import (

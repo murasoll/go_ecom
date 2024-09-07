@@ -1,5 +1,3 @@
-// api/v1/cart.go
-
 package v1
 
 import (

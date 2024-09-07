@@ -1,5 +1,3 @@
-// services/shipping_service.go
-
 package services
 
 import (

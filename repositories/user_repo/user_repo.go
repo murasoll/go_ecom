@@ -1,5 +1,3 @@
-// repositories/user_repo/user_repo.go
-
 package user_repo
 
 import (

@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-	config.ConnectDatabase()  // Ensure the database is connected and tables are created
-	s := server.SetupServer() // Initialize the server
+	config.ConnectDatabase()
+	s := server.SetupServer()
 	log.Println("Server starting on port 8080...")
-	log.Fatal(http.ListenAndServe(":8080", s)) // Start the HTTP server
+	log.Fatal(http.ListenAndServe(":8080", s))
 }

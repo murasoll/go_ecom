@@ -1,5 +1,3 @@
-// services/product_service.go
-
 package services
 
 import (

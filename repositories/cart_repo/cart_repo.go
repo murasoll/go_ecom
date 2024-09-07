@@ -1,5 +1,3 @@
-// repositories/cart_repo/cart_repo.go
-
 package cart_repo
 
 import (

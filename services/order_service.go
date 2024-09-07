@@ -1,5 +1,3 @@
-// services/order_service.go
-
 package services
 
 import (
