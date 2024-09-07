@@ -1,4 +1,6 @@
-package auth
+// api/v1/auth.go
+
+package v1
 
 import (
 	"ecomerce/helpers"
@@ -10,21 +12,16 @@ import (
 
 var authService *services.AuthService
 
-// InitAuthHandlers initializes the auth handlers with the necessary dependencies
 func InitAuthHandlers(as *services.AuthService) {
 	authService = as
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	var loginRequest struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
 	}
-
-	err := json.NewDecoder(r.Body).Decode(&loginRequest)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&loginRequest); err != nil {
 		helpers.JsonResponse(w, map[string]string{"error": "Invalid request payload"}, http.StatusBadRequest)
 		return
 	}
@@ -42,20 +39,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	var user models.User
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		helpers.JsonResponse(w, map[string]string{"error": "Invalid request payload"}, http.StatusBadRequest)
 		return
 	}
 
-	// Set a default role for new users (e.g., customer)
 	user.Role = models.RoleCustomer
-
-	err = authService.Register(&user)
-	if err != nil {
+	if err := authService.Register(&user); err != nil {
 		helpers.JsonResponse(w, map[string]string{"error": "Error registering user"}, http.StatusInternalServerError)
 		return
 	}
@@ -66,19 +57,14 @@ func Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	tokenString := r.Header.Get("Authorization")
 	if tokenString == "" {
 		helpers.JsonResponse(w, map[string]string{"error": "No token provided"}, http.StatusBadRequest)
 		return
 	}
 
-	// Remove "Bearer " prefix if present
 	tokenString = helpers.TrimBearerPrefix(tokenString)
-
-	err := authService.Logout(tokenString)
-	if err != nil {
+	if err := authService.Logout(tokenString); err != nil {
 		helpers.JsonResponse(w, map[string]string{"error": "Error logging out"}, http.StatusInternalServerError)
 		return
 	}

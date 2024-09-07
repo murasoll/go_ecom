@@ -1,7 +1,8 @@
+// middleware/auth_middleware.go
+
 package middleware
 
 import (
-	"context"
 	"ecomerce/helpers"
 	"ecomerce/models"
 	"ecomerce/services"
@@ -12,10 +13,8 @@ type AuthMiddleware struct {
 	authService *services.AuthService
 }
 
-func NewAuthMiddleware(authService *services.AuthService) *AuthMiddleware {
-	return &AuthMiddleware{
-		authService: authService,
-	}
+func NewAuthMiddleware(as *services.AuthService) *AuthMiddleware {
+	return &AuthMiddleware{authService: as}
 }
 
 func (m *AuthMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
@@ -36,7 +35,7 @@ func (m *AuthMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		// Add the user to the request context
-		ctx := context.WithValue(r.Context(), "user", user)
+		ctx := services.ContextWithUser(r.Context(), user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 }
@@ -44,8 +43,8 @@ func (m *AuthMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 func (m *AuthMiddleware) Authorize(roles ...models.Role) func(http.HandlerFunc) http.HandlerFunc {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
-			user, ok := r.Context().Value("user").(*models.User)
-			if !ok {
+			user, err := services.UserFromContext(r.Context())
+			if err != nil {
 				helpers.JsonResponse(w, map[string]string{"error": "Unauthorized"}, http.StatusUnauthorized)
 				return
 			}

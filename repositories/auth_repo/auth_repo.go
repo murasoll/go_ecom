@@ -3,14 +3,20 @@ package auth_repo
 import (
 	"ecomerce/config"
 	"ecomerce/models"
-	"ecomerce/repositories"
 	"log"
 	"time"
 )
 
+type AuthRepository interface {
+	StoreToken(token *models.Token) error
+	GetToken(tokenString string) (*models.Token, error)
+	DeleteToken(tokenString string) error
+	CleanExpiredTokens() error
+}
+
 type AuthRepoImpl struct{}
 
-func NewAuthRepo() repositories.AuthRepository {
+func NewAuthRepo() AuthRepository {
 	return &AuthRepoImpl{}
 }
 

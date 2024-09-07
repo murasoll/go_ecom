@@ -1,27 +1,27 @@
+// services/auth_service.go
+
 package services
 
 import (
 	"ecomerce/models"
-	"ecomerce/repositories"
+	"ecomerce/repositories/auth_repo"
+	"ecomerce/repositories/user_repo"
 	"errors"
-	"log"
-	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {
-	userRepo repositories.UserRepository
-	authRepo repositories.AuthRepository
+	userRepo user_repo.UserRepository
+	authRepo auth_repo.AuthRepository
 }
 
-func NewAuthService(userRepo repositories.UserRepository, authRepo repositories.AuthRepository) *AuthService {
+func NewAuthService(ur user_repo.UserRepository, ar auth_repo.AuthRepository) *AuthService {
 	return &AuthService{
-		userRepo: userRepo,
-		authRepo: authRepo,
+		userRepo: ur,
+		authRepo: ar,
 	}
 }
 
@@ -62,13 +62,7 @@ func (s *AuthService) generateToken(user models.User) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-	SK := os.Getenv("SECRET_KEY")
-	secretKey := []byte(SK)
+	secretKey := []byte("your-secret-key") // Replace with a secure secret key
 	tokenString, err := token.SignedString(secretKey)
 	if err != nil {
 		return "", err

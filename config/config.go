@@ -60,8 +60,69 @@ func autoMigrate() {
 	createProductsTable := `
     CREATE TABLE IF NOT EXISTS products (
         id SERIAL PRIMARY KEY,
-        name VARCHAR(100),
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
         price NUMERIC(10, 2) NOT NULL,
+        category_id INTEGER REFERENCES categories(id),
+        inventory INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );`
+
+	createCategoriesTable := `
+    CREATE TABLE IF NOT EXISTS categories (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) UNIQUE NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );`
+
+	createCartsTable := `
+    CREATE TABLE IF NOT EXISTS carts (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );`
+
+	createCartItemsTable := `
+    CREATE TABLE IF NOT EXISTS cart_items (
+        id SERIAL PRIMARY KEY,
+        cart_id INTEGER REFERENCES carts(id),
+        product_id INTEGER REFERENCES products(id),
+        quantity INTEGER NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );`
+
+	createOrdersTable := `
+    CREATE TABLE IF NOT EXISTS orders (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        status VARCHAR(50) NOT NULL,
+        total NUMERIC(10, 2) NOT NULL,
+        shipping_address TEXT NOT NULL,
+        shipping_cost NUMERIC(10, 2) NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );`
+
+	createOrderItemsTable := `
+    CREATE TABLE IF NOT EXISTS order_items (
+        id SERIAL PRIMARY KEY,
+        order_id INTEGER REFERENCES orders(id),
+        product_id INTEGER REFERENCES products(id),
+        quantity INTEGER NOT NULL,
+        price NUMERIC(10, 2) NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );`
+
+	createCitiesTable := `
+    CREATE TABLE IF NOT EXISTS cities (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) UNIQUE NOT NULL,
+        shipping_cost NUMERIC(10, 2) NOT NULL,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );`
@@ -75,22 +136,30 @@ func autoMigrate() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );`
 
-	_, err := DB.Exec(createUsersTable)
-	if err != nil {
-		log.Fatal("Error creating users table:", err)
+	tables := []struct {
+		name  string
+		query string
+	}{
+		{"users", createUsersTable},
+		{"categories", createCategoriesTable},
+		{"products", createProductsTable},
+		{"carts", createCartsTable},
+		{"cart_items", createCartItemsTable},
+		{"orders", createOrdersTable},
+		{"order_items", createOrderItemsTable},
+		{"cities", createCitiesTable},
+		{"tokens", createTokensTable},
 	}
 
-	_, err = DB.Exec(createProductsTable)
-	if err != nil {
-		log.Fatal("Error creating products table:", err)
+	for _, table := range tables {
+		_, err := DB.Exec(table.query)
+		if err != nil {
+			log.Fatalf("Error creating %s table: %v", table.name, err)
+		}
+		log.Printf("%s table ensured/created successfully", table.name)
 	}
 
-	_, err = DB.Exec(createTokensTable)
-	if err != nil {
-		log.Fatal("Error creating tokens table:", err)
-	}
-
-	log.Println("Tables ensured/created successfully")
+	log.Println("All tables ensured/created successfully")
 }
 
 func createAdminUser() {

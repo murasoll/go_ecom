@@ -1,8 +1,16 @@
+// server/server.go
+
 package server
 
 import (
-	"ecomerce/api/v1/auth"
+	v1 "ecomerce/api/v1"
+	"ecomerce/middleware"
 	"ecomerce/repositories/auth_repo"
+	"ecomerce/repositories/cart_repo"
+	"ecomerce/repositories/category_repo"
+	"ecomerce/repositories/city_repo"
+	"ecomerce/repositories/order_repo"
+	"ecomerce/repositories/product_repo"
 	"ecomerce/repositories/user_repo"
 	"ecomerce/routes"
 	"ecomerce/services"
@@ -13,11 +21,36 @@ import (
 func SetupServer() *mux.Router {
 	r := mux.NewRouter()
 
+	// Initialize repositories
 	userRepo := user_repo.NewUserRepo()
 	authRepo := auth_repo.NewAuthRepo()
-	authService := services.NewAuthService(userRepo, authRepo)
-	auth.InitAuthHandlers(authService)
+	productRepo := product_repo.NewProductRepo()
+	categoryRepo := category_repo.NewCategoryRepo()
+	cartRepo := cart_repo.NewCartRepo()
+	orderRepo := order_repo.NewOrderRepo()
+	cityRepo := city_repo.NewCityRepo()
 
-	routes.SetupRoutes(r, authService) // Register API routes
+	// Initialize services
+	authService := services.NewAuthService(userRepo, authRepo)
+	productService := services.NewProductService(productRepo, categoryRepo)
+	categoryService := services.NewCategoryService(categoryRepo)
+	cartService := services.NewCartService(cartRepo, productRepo)
+	orderService := services.NewOrderService(orderRepo, cartRepo, productRepo)
+	shippingService := services.NewShippingService(cityRepo)
+
+	// Initialize API handlers
+	v1.InitAuthHandlers(authService)
+	v1.InitProductHandlers(productService)
+	v1.InitCategoryHandlers(categoryService)
+	v1.InitCartHandlers(cartService)
+	v1.InitOrderHandlers(orderService)
+	v1.InitShippingHandlers(shippingService)
+
+	// Initialize middleware
+	authMiddleware := middleware.NewAuthMiddleware(authService)
+
+	// Setup routes
+	routes.SetupRoutes(r, authMiddleware)
+
 	return r
 }

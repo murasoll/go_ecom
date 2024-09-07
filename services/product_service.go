@@ -1,26 +1,63 @@
+// services/product_service.go
+
 package services
 
 import (
 	"ecomerce/models"
+	"ecomerce/repositories/category_repo"
 	"ecomerce/repositories/product_repo"
+	"errors"
 )
 
-func GetProducts() []models.Product {
-	return product_repo.GetAllProducts()
+type ProductService struct {
+	productRepo  product_repo.ProductRepository
+	categoryRepo category_repo.CategoryRepository
 }
 
-func CreateProduct(product models.Product) (models.Product, error) {
-	return product_repo.CreateProduct(product)
+func NewProductService(pr product_repo.ProductRepository, cr category_repo.CategoryRepository) *ProductService {
+	return &ProductService{
+		productRepo:  pr,
+		categoryRepo: cr,
+	}
 }
 
-func GetProductByID(id string) (models.Product, error) {
-	return product_repo.GetProductByID(id)
+func (s *ProductService) GetAllProducts(filter map[string]interface{}) ([]models.Product, error) {
+	return s.productRepo.GetAll(filter)
 }
 
-func UpdateProduct(product models.Product) error {
-	return product_repo.UpdateProduct(product)
+func (s *ProductService) GetProductByID(id uint) (models.Product, error) {
+	return s.productRepo.GetByID(id)
 }
 
-func DeleteProduct(id string) error {
-	return product_repo.DeleteProduct(id)
+func (s *ProductService) CreateProduct(product *models.Product) error {
+	// Validate category exists
+	_, err := s.categoryRepo.GetByID(product.CategoryID)
+	if err != nil {
+		return errors.New("invalid category")
+	}
+	return s.productRepo.Create(product)
+}
+
+func (s *ProductService) UpdateProduct(product *models.Product) error {
+	// Validate category exists
+	_, err := s.categoryRepo.GetByID(product.CategoryID)
+	if err != nil {
+		return errors.New("invalid category")
+	}
+	return s.productRepo.Update(product)
+}
+
+func (s *ProductService) DeleteProduct(id uint) error {
+	return s.productRepo.Delete(id)
+}
+
+func (s *ProductService) UpdateInventory(id uint, quantity int) error {
+	product, err := s.productRepo.GetByID(id)
+	if err != nil {
+		return err
+	}
+	if int(product.Inventory)+quantity < 0 {
+		return errors.New("insufficient inventory")
+	}
+	return s.productRepo.UpdateInventory(id, quantity)
 }
