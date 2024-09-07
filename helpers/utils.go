@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"regexp"
+	"strings"
 )
 
 func IsValidEmail(email string) bool {
@@ -15,4 +16,8 @@ func JsonResponse(w http.ResponseWriter, data interface{}, statusCode int) {
 	w.WriteHeader(statusCode)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
+}
+
+func TrimBearerPrefix(token string) string {
+	return strings.TrimPrefix(token, "Bearer ")
 }
