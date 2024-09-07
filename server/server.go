@@ -14,11 +14,12 @@ import (
 	"ecomerce/repositories/user_repo"
 	"ecomerce/routes"
 	"ecomerce/services"
+	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
-func SetupServer() *mux.Router {
+func SetupServer() http.Handler {
 	r := mux.NewRouter()
 
 	// Initialize repositories
@@ -49,8 +50,17 @@ func SetupServer() *mux.Router {
 	// Initialize middleware
 	authMiddleware := middleware.NewAuthMiddleware(authService)
 
+	r.Use(middleware.CorsMiddleware())
+
 	// Setup routes
 	routes.SetupRoutes(r, authMiddleware)
 
-	return r
+	// Apply middlewares
+	handler := middleware.CorsMiddleware()(r)
+
+	return handler
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+	return middleware.CorsMiddleware()(next)
 }
