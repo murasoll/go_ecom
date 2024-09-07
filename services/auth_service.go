@@ -4,9 +4,12 @@ import (
 	"ecomerce/models"
 	"ecomerce/repositories"
 	"errors"
+	"log"
+	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -59,7 +62,13 @@ func (s *AuthService) generateToken(user models.User) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	secretKey := []byte("your-secret-key") // Replace with a secure secret key
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	SK := os.Getenv("SECRET_KEY")
+	secretKey := []byte(SK)
 	tokenString, err := token.SignedString(secretKey)
 	if err != nil {
 		return "", err
